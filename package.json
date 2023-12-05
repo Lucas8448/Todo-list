@@ -1,0 +1,15 @@
+{
+  "name": "todo-list",
+  "version": "1.0.0",
+  "description": "Todo list serving a frontend with sqlite3 data",
+  "main": "index.js",
+  "scripts": {
+    "test": ""
+  },
+  "author": "Lucas William Bateson",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6"
+  }
+}
