@@ -8,7 +8,7 @@
 
 <body>
   <div class="container">
-    <h1>Todolist App</h1>
+    <h1>Todolist</h1>
     <table id="todolistTable" class="table">
       <thead>
         <tr>
@@ -45,7 +45,7 @@
           response.forEach(function (item) {
             var row = $('<tr>');
             row.append($('<td>').text(item.title));
-            row.append($(' <td> ').text(item.content));
+            row.append($('<td>').text(item.content));
             tbody.append(row);
           });
         },
