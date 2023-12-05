@@ -14,6 +14,8 @@
         <tr>
           <th>Title</th>
           <th>Content</th>
+          <th>Done</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -28,47 +30,96 @@
         <label for="contentInput">Content</label>
         <input type="text" class="form-control" id="contentInput" placeholder="Enter content">
       </div>
+      <div class="form-group form-check">
+        <input type="checkbox" class="form-check-input" id="doneInput">
+        <label class="form-check-label" for="doneInput">Done</label>
+      </div>
       <button type="submit" class="btn btn-primary">Add</button>
     </form>
   </div>
 
+  <!-- JavaScript and jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
   <script>
     $(document).ready(function () {
-      $.ajax({
-        url: '/todolist',
-        method: 'GET',
-        success: function (response) {
-          var tbody = $('#todolistTable tbody');
-          tbody.empty();
-          response.forEach(function (item) {
-            var row = $('<tr>');
-            row.append($('<td>').text(item.title));
-            row.append($('<td>').text(item.content));
-            tbody.append(row);
-          });
-        },
-        error: function (error) {
-          console.log(error);
-        }
-      });
+      function refreshTodoList() {
+        $.ajax({
+          url: '/todolist',
+          method: 'GET',
+          success: function (response) {
+            var tbody = $('#todolistTable tbody');
+            tbody.empty();
+            response.forEach(function (item) {
+              var row = $('<tr>');
+              row.append($('<td>').text(item.title));
+              row.append($('<td>').text(item.content));
+              row.append($('<td>').text(item.done ? 'Yes' : 'No'));
+              row.append($('<td>')
+                .append($('<button class="btn btn-primary btn-sm mr-2">').text('Edit').click(
+                  function () {
+                    editItem(item.id);
+                  }))
+                .append($('<button class="btn btn-danger btn-sm">').text('Delete').click(function () {
+                  deleteItem(item.id);
+                })));
+              tbody.append(row);
+            });
+          }
+        });
+      }
+
+      function editItem(id) {
+        $.ajax({
+          url: '/todolist/' + id,
+          method: 'GET',
+          success: function (response) {
+            $('#titleInput').val(response.title);
+            $('#contentInput').val(response.content);
+            $('#doneInput').prop('checked', response.done);
+            $('#addForm').data('action', 'edit').data('id', id);
+            $('#addForm button[type="submit"]').text('Update');
+          }
+        });
+      }
+
+      function deleteItem(id) {
+        $.ajax({
+          url: '/todolist/' + id,
+          method: 'DELETE',
+          success: function () {
+            refreshTodoList();
+          }
+        });
+      }
+
+      refreshTodoList();
+
       $('#addForm').submit(function (event) {
         event.preventDefault();
         var title = $('#titleInput').val();
         var content = $('#contentInput').val();
+        var done = $('#doneInput').is(':checked');
+
+        var action = $(this).data('action');
+        var id = $(this).data('id');
+        var url = '/todolist' + (action === 'edit' ? '/' + id : '');
+        var method = action === 'edit' ? 'PUT' : 'POST';
+
         $.ajax({
-          url: '/todolist',
-          method: 'POST',
+          url: url,
+          method: method,
           data: {
             title: title,
-            content: content
+            content: content,
+            done: done
           },
-          success: function (response) {
-            location.reload();
-          },
-          error: function (error) {
-            console.log(error);
+          success: function () {
+            refreshTodoList();
+            $('#titleInput').val('');
+            $('#contentInput').val('');
+            $('#doneInput').prop('checked', false);
+            $('#addForm').data('action', 'add').removeData('id');
           }
         });
       });

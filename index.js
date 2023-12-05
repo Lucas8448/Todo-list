@@ -10,7 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const db = new database.Database('./database.db');
 
-db.run('CREATE TABLE IF NOT EXISTS todolist (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, content TEXT)')
+db.run('CREATE TABLE IF NOT EXISTS todolist (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, content TEXT, done BOOLEAN DEFAULT FALSE)')
 
 app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, 'index.html'));
@@ -53,8 +53,8 @@ app.post('/todolist', (req, res) => {
 
 app.put('/todolist/:id', (req, res) => {
   const id = req.params.id;
-  const { title, content } = req.body;
-  db.run('UPDATE todolist SET title = ?, content = ? WHERE id = ?', [title, content, id], (err) => {
+  const { title, content, done } = req.body;
+  db.run('UPDATE todolist SET title = ?, content = ?, done = ? WHERE id = ?', [title, content, done ? 1 : 0, id], (err) => {
     if (err) {
       console.log(err);
       res.sendStatus(500);
