@@ -1,7 +1,7 @@
 const express = require('express');
 const database = require('sqlite3');
+const path = require('path');
 
-// todo list api server
 const app = express();
 const port = 3000;
 
@@ -11,6 +11,10 @@ app.use(express.urlencoded({ extended: true }));
 const db = new database.Database('./database.db');
 
 db.run('CREATE TABLE IF NOT EXISTS todolist (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, content TEXT)')
+
+app.get('/', function (req, res) {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 app.get('/todolist', (req, res) => {
   db.all('SELECT * FROM todolist', (err, rows) => {
@@ -73,5 +77,6 @@ app.delete('/todolist/:id', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}`);
+  console.log(`Serving GUI at http://localhost:${port}`);
+  console.log(`Serving API at http://localhost:${port}/todolist`);
 });
